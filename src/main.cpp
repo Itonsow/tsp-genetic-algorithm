@@ -158,7 +158,7 @@ public:
         ga_cfg.population_size = config_ref.pop;
         ga_cfg.mutation_rate = config_ref.mut;
         
-        for (int epoch = 0; epoch < getBestPerEpoch().capacity(); ++epoch) {
+        for (int epoch = 0; epoch < static_cast<int>(getBestPerEpoch().capacity()); ++epoch) {
             // Salva quadro antes da evolução
             if (epoch % frame_interval == 0) {
                 saveEpochFrame(tsp_ref, getBestEver(), epoch, ga_cfg, config_ref.framesdir, 1);

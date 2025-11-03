@@ -61,7 +61,7 @@ inline bool plotTour(const TSPInstance& tsp, const Tour& tour, const std::string
 
 // Plota uma rota com informações da geração
 inline bool plotEpochTour(const TSPInstance& tsp, const Individual& best, int epoch,
-                          const GAConfig& config, const std::string& filename) {
+                          const GAConfig& /* config */, const std::string& filename) {
     std::ostringstream title;
     title << "Generation: " << epoch;
     
