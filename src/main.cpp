@@ -24,45 +24,45 @@ struct Config {
     bool check_mode = false;
     
     void print() const {
-        std::cout << "\n=== TSP Genetic Algorithm Configuration ===\n";
-        std::cout << "Scenario:          " << scenario << "\n";
-        std::cout << "Number of cities:  " << n << "\n";
-        std::cout << "Epochs:            " << epochs << "\n";
-        std::cout << "Population size:   " << pop << "\n";
-        std::cout << "Mutation rate:     " << mut << "\n";
-        std::cout << "Selection:         " << selection << "\n";
+        std::cout << "\n=== Configuração do Algoritmo Genético TSP ===\n";
+        std::cout << "Cenário:                " << scenario << "\n";
+        std::cout << "Número de cidades:      " << n << "\n";
+        std::cout << "Épocas:                 " << epochs << "\n";
+        std::cout << "Tamanho da população:   " << pop << "\n";
+        std::cout << "Taxa de mutação:        " << mut << "\n";
+        std::cout << "Seleção:                " << selection << "\n";
         if (selection == "tournament") {
-            std::cout << "Tournament size:   " << tournament << "\n";
+            std::cout << "Tamanho do torneio:     " << tournament << "\n";
         }
-        std::cout << "Crossover:         " << crossover << "\n";
-        std::cout << "Elite count:       " << elite << "\n";
-        std::cout << "Patience:          " << patience << "\n";
-        std::cout << "Random seed:       " << seed << "\n";
-        std::cout << "Output directory:  " << outdir << "\n";
-        std::cout << "Frames directory:  " << framesdir << "\n";
-        std::cout << "==========================================\n\n";
+        std::cout << "Crossover:              " << crossover << "\n";
+        std::cout << "Contagem de elite:      " << elite << "\n";
+        std::cout << "Paciência:              " << patience << "\n";
+        std::cout << "Semente aleatória:      " << seed << "\n";
+        std::cout << "Diretório de saída:     " << outdir << "\n";
+        std::cout << "Diretório de quadros:   " << framesdir << "\n";
+        std::cout << "==============================================\n\n";
     }
 };
 
 void printUsage(const char* program) {
-    std::cout << "Usage: " << program << " [OPTIONS]\n\n";
-    std::cout << "Options:\n";
-    std::cout << "  --scenario {uniform|circle}  Scenario type (default: uniform)\n";
-    std::cout << "  --n <int>                    Number of cities (default: 50)\n";
-    std::cout << "  --epochs <int>               Number of generations (default: 500)\n";
-    std::cout << "  --pop <int>                  Population size (default: 200)\n";
-    std::cout << "  --mut <float>                Mutation rate (default: 0.05)\n";
-    std::cout << "  --selection {tournament|roulette}  Selection method (default: tournament)\n";
-    std::cout << "  --tournament <int>           Tournament size (default: 3)\n";
-    std::cout << "  --crossover {ox|pmx}         Crossover type (default: ox)\n";
-    std::cout << "  --elite <int>                Elite count (default: 2)\n";
-    std::cout << "  --patience <int>             Early stopping patience (default: 100)\n";
-    std::cout << "  --seed <int>                 Random seed (default: 42)\n";
-    std::cout << "  --outdir <path>              Output directory (default: ./outputs)\n";
-    std::cout << "  --frames <path>              Frames directory (default: ./frames)\n";
-    std::cout << "  --check                      Run quick validation mode\n";
-    std::cout << "  --help                       Show this help message\n\n";
-    std::cout << "Examples:\n";
+    std::cout << "Uso: " << program << " [OPÇÕES]\n\n";
+    std::cout << "Opções:\n";
+    std::cout << "  --scenario {uniform|circle}  Tipo de cenário (padrão: uniform)\n";
+    std::cout << "  --n <int>                    Número de cidades (padrão: 50)\n";
+    std::cout << "  --epochs <int>               Número de gerações (padrão: 500)\n";
+    std::cout << "  --pop <int>                  Tamanho da população (padrão: 200)\n";
+    std::cout << "  --mut <float>                Taxa de mutação (padrão: 0.05)\n";
+    std::cout << "  --selection {tournament|roulette}  Método de seleção (padrão: tournament)\n";
+    std::cout << "  --tournament <int>           Tamanho do torneio (padrão: 3)\n";
+    std::cout << "  --crossover {ox|pmx}         Tipo de crossover (padrão: ox)\n";
+    std::cout << "  --elite <int>                Contagem de elite (padrão: 2)\n";
+    std::cout << "  --patience <int>             Paciência para parada antecipada (padrão: 100)\n";
+    std::cout << "  --seed <int>                 Semente aleatória (padrão: 42)\n";
+    std::cout << "  --outdir <path>              Diretório de saída (padrão: ./outputs)\n";
+    std::cout << "  --frames <path>              Diretório de quadros (padrão: ./frames)\n";
+    std::cout << "  --check                      Executar modo de validação rápida\n";
+    std::cout << "  --help                       Mostrar esta mensagem de ajuda\n\n";
+    std::cout << "Exemplos:\n";
     std::cout << "  " << program << " --scenario uniform --n 60 --epochs 800 --crossover pmx --mut 0.08\n";
     std::cout << "  " << program << " --scenario circle --n 80 --epochs 1200 --selection roulette --elite 4\n";
     std::cout << "  " << program << " --check\n\n";
@@ -104,7 +104,7 @@ bool parseArgs(int argc, char* argv[], Config& config) {
         } else if (arg == "--frames" && i + 1 < argc) {
             config.framesdir = argv[++i];
         } else {
-            std::cerr << "Unknown argument: " << arg << "\n";
+            std::cerr << "Argumento desconhecido: " << arg << "\n";
             printUsage(argv[0]);
             return false;
         }
@@ -115,23 +115,23 @@ bool parseArgs(int argc, char* argv[], Config& config) {
 
 bool validateConfig(const Config& config) {
     if (config.n < 8) {
-        std::cerr << "Error: Minimum 8 cities required\n";
+        std::cerr << "Erro: Mínimo de 8 cidades necessário\n";
         return false;
     }
     if (config.scenario != "uniform" && config.scenario != "circle") {
-        std::cerr << "Error: Scenario must be 'uniform' or 'circle'\n";
+        std::cerr << "Erro: Cenário deve ser 'uniform' ou 'circle'\n";
         return false;
     }
     if (config.selection != "tournament" && config.selection != "roulette") {
-        std::cerr << "Error: Selection must be 'tournament' or 'roulette'\n";
+        std::cerr << "Erro: Seleção deve ser 'tournament' ou 'roulette'\n";
         return false;
     }
     if (config.crossover != "ox" && config.crossover != "pmx") {
-        std::cerr << "Error: Crossover must be 'ox' or 'pmx'\n";
+        std::cerr << "Erro: Crossover deve ser 'ox' ou 'pmx'\n";
         return false;
     }
     if (config.mut < 0.0 || config.mut > 1.0) {
-        std::cerr << "Error: Mutation rate must be between 0.0 and 1.0\n";
+        std::cerr << "Erro: Taxa de mutação deve estar entre 0.0 e 1.0\n";
         return false;
     }
     return true;
@@ -168,12 +168,12 @@ public:
             
             // Indicador de progresso
             if (epoch % 50 == 0 || epoch == 0) {
-                std::cout << "Epoch " << epoch << " | Best: " << getBestEver().fitness << "\n";
+                std::cout << "Época " << epoch << " | Melhor: " << getBestEver().fitness << "\n";
             }
             
             // Verifica paciência
             if (getActualEpochs() > 0 && epoch >= getActualEpochs() - 1) {
-                std::cout << "Early stopping at epoch " << epoch << " (patience reached)\n";
+                std::cout << "Parada antecipada na época " << epoch << " (paciência atingida)\n";
                 // Salva quadro final
                 saveEpochFrame(tsp_ref, getBestEver(), epoch, ga_cfg, config_ref.framesdir, 1);
                 break;
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     
     // Modo de verificação: execução rápida de validação
     if (config.check_mode) {
-        std::cout << "Running in CHECK mode (quick validation)\n";
+        std::cout << "Executando no modo CHECK (validação rápida)\n";
         config.epochs = 30;
         config.n = 20;
         config.pop = 50;
@@ -213,10 +213,10 @@ int main(int argc, char* argv[]) {
     // Configura instância TSP
     TSPInstance tsp;
     if (config.scenario == "uniform") {
-        std::cout << "Generating " << config.n << " random cities (uniform distribution)...\n";
+        std::cout << "Gerando " << config.n << " cidades aleatórias (distribuição uniforme)...\n";
         tsp.generateUniform(config.n, config.seed);
     } else {
-        std::cout << "Generating " << config.n << " cities on a circle...\n";
+        std::cout << "Gerando " << config.n << " cidades em um círculo...\n";
         tsp.generateCircle(config.n);
     }
     
@@ -245,14 +245,14 @@ int main(int argc, char* argv[]) {
     }
     
     // Executa GA
-    std::cout << "Starting Genetic Algorithm...\n";
+    std::cout << "Iniciando Algoritmo Genético...\n";
     auto start_time = std::chrono::high_resolution_clock::now();
     
     GeneticAlgorithm ga(tsp, ga_config);
     ga.run();
     
     // Gera quadros durante a evolução (re-executa com salvamento de quadros)
-    std::cout << "\nGenerating epoch frames...\n";
+    std::cout << "\nGerando quadros das épocas...\n";
     GeneticAlgorithm ga_frames(tsp, ga_config);
     ga_frames.initializePopulation();
     
@@ -272,54 +272,43 @@ int main(int argc, char* argv[]) {
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     
-    std::cout << "\nGA completed in " << duration.count() / 1000.0 << " seconds\n";
-    std::cout << "Actual epochs run: " << ga.getActualEpochs() << "\n";
-    std::cout << "Best tour length: " << ga.getBestEver().fitness << "\n";
+    std::cout << "\nGA concluído em " << duration.count() / 1000.0 << " segundos\n";
+    std::cout << "Épocas executadas: " << ga.getActualEpochs() << "\n";
+    std::cout << "Melhor comprimento da rota: " << ga.getBestEver().fitness << "\n";
     
     // Salva saídas
-    std::cout << "\nSaving outputs...\n";
+    std::cout << "\nSalvando saídas...\n";
     
     // Melhor rota SVG
     std::string best_tour_svg = config.outdir + "/best_tour.svg";
     plotTour(tsp, ga.getBestEver().tour, best_tour_svg, 
-             "Best Tour - Length: " + std::to_string(ga.getBestEver().fitness));
-    std::cout << "  Saved: " << best_tour_svg << "\n";
+             "Melhor Rota - Comprimento: " + std::to_string(ga.getBestEver().fitness));
+    std::cout << "  Salvo: " << best_tour_svg << "\n";
     
     // Melhor rota texto
     std::string best_tour_txt = config.outdir + "/best_tour.txt";
     saveTourToFile(best_tour_txt, ga.getBestEver().tour, ga.getBestEver().fitness);
-    std::cout << "  Saved: " << best_tour_txt << "\n";
+    std::cout << "  Salvo: " << best_tour_txt << "\n";
     
     // Gráfico de convergência
     std::string convergence_svg = config.outdir + "/convergence.svg";
     plotConvergence(ga.getBestPerEpoch(), convergence_svg);
-    std::cout << "  Saved: " << convergence_svg << "\n";
+    std::cout << "  Salvo: " << convergence_svg << "\n";
     
     // Métricas CSV
     std::string metrics_csv = config.outdir + "/metrics.csv";
     saveMetricsCSV(metrics_csv, ga.getBestPerEpoch(), ga.getMeanPerEpoch(), 
                    ga.getWorstPerEpoch(), config.mut, config.seed);
-    std::cout << "  Saved: " << metrics_csv << "\n";
+    std::cout << "  Salvo: " << metrics_csv << "\n";
     
-    std::cout << "\n=== Summary ===\n";
-    std::cout << "Frames saved in: " << config.framesdir << "/\n";
-    std::cout << "To create video with ffmpeg (if SVG supported):\n";
-    std::cout << "  ffmpeg -framerate 30 -pattern_type glob -i '" << config.framesdir 
-              << "/epoch_*.svg' -c:v libx264 -pix_fmt yuv420p " << config.outdir << "/evolution.mp4\n\n";
-    std::cout << "Or convert to PNG first:\n";
-    std::cout << "  mkdir -p " << config.framesdir << "_png\n";
-    std::cout << "  for f in " << config.framesdir << "/epoch_*.svg; do\n";
-    std::cout << "    rsvg-convert \"$f\" -o \"" << config.framesdir 
-              << "_png/$(basename \"${f%.svg}\").png\" -w 1280 -h 720\n";
-    std::cout << "  done\n";
-    std::cout << "  ffmpeg -framerate 30 -pattern_type glob -i '" << config.framesdir 
-              << "_png/epoch_*.png' -c:v libx264 -pix_fmt yuv420p " << config.outdir << "/evolution.mp4\n\n";
+    std::cout << "\n=== Resumo ===\n";
+    std::cout << "Quadros salvos em: " << config.framesdir << "/\n";
     
     if (config.check_mode) {
-        std::cout << "\n✓ CHECK mode completed successfully!\n";
-        std::cout << "  - Frames were generated in " << config.framesdir << "/\n";
-        std::cout << "  - Metrics saved to " << metrics_csv << "\n";
-        std::cout << "  - Best tour saved to " << best_tour_svg << "\n";
+        std::cout << "\n✓ Modo CHECK concluído com sucesso!\n";
+        std::cout << "  - Quadros foram gerados em " << config.framesdir << "/\n";
+        std::cout << "  - Métricas salvas em " << metrics_csv << "\n";
+        std::cout << "  - Melhor rota salva em " << best_tour_svg << "\n";
     }
     
     return 0;
