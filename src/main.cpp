@@ -6,18 +6,20 @@
 #include <cstring>
 #include <chrono>
 
+#define MAXQ 200
+
 // Analisador simples de argumentos da linha de comando
 struct Config {
-    std::string scenario = "uniform";
-    int n = 50;
-    int epochs = 500;
+    std::string cenario = "uniforme";
+    int pontos = 50;
+    int epocas = 500;
     int pop = 200;
     double mut = 0.05;
-    std::string selection = "tournament";
-    int tournament = 3;
+    std::string selection = "torneio";
+    int torneio = 3;
     std::string crossover = "ox";
-    int elite = 2;
-    int patience = 100;
+    int alpha = 2;
+    int paciencia = 100;
     int seed = 42;
     std::string outdir = "./outputs";
     std::string framesdir = "./frames";
@@ -25,18 +27,17 @@ struct Config {
     
     void print() const {
         std::cout << "\n=== Configuração do Algoritmo Genético TSP ===\n";
-        std::cout << "Cenário:                " << scenario << "\n";
-        std::cout << "Número de cidades:      " << n << "\n";
-        std::cout << "Épocas:                 " << epochs << "\n";
+        std::cout << "Cenário:                " << cenario << "\n";
+        std::cout << "Número de pontos:      " << pontos << "\n";
+        std::cout << "Épocas:                 " << epocas << "\n";
         std::cout << "Tamanho da população:   " << pop << "\n";
         std::cout << "Taxa de mutação:        " << mut << "\n";
         std::cout << "Seleção:                " << selection << "\n";
-        if (selection == "tournament") {
-            std::cout << "Tamanho do torneio:     " << tournament << "\n";
+        if (selection == "torneio") {
+            std::cout << "Tamanho do torneio:     " << torneio << "\n";
         }
-        std::cout << "Crossover:              " << crossover << "\n";
-        std::cout << "Contagem de elite:      " << elite << "\n";
-        std::cout << "Paciência:              " << patience << "\n";
+        std::cout << "Contagem de alpha:      " << alpha << "\n";
+        std::cout << "Paciência:              " << paciencia << "\n";
         std::cout << "Semente aleatória:      " << seed << "\n";
         std::cout << "Diretório de saída:     " << outdir << "\n";
         std::cout << "Diretório de quadros:   " << framesdir << "\n";
@@ -47,28 +48,38 @@ struct Config {
 void printUsage(const char* program) {
     std::cout << "Uso: " << program << " [OPÇÕES]\n\n";
     std::cout << "Opções:\n";
-    std::cout << "  --scenario {uniform|circle}  Tipo de cenário (padrão: uniform)\n";
-    std::cout << "  --n <int>                    Número de cidades (padrão: 50)\n";
-    std::cout << "  --epochs <int>               Número de gerações (padrão: 500)\n";
+    std::cout << "  --cenario {uniforme|circulo}  Tipo de cenário (padrão: uniforme)\n";
+    std::cout << "  --pontos <int>                    Número de pontos (padrão: 50)\n";
+    std::cout << "  --epocas <int>               Número de gerações (padrão: 500)\n";
     std::cout << "  --pop <int>                  Tamanho da população (padrão: 200)\n";
     std::cout << "  --mut <float>                Taxa de mutação (padrão: 0.05)\n";
-    std::cout << "  --selection {tournament|roulette}  Método de seleção (padrão: tournament)\n";
-    std::cout << "  --tournament <int>           Tamanho do torneio (padrão: 3)\n";
-    std::cout << "  --crossover {ox|pmx}         Tipo de crossover (padrão: ox)\n";
-    std::cout << "  --elite <int>                Contagem de elite (padrão: 2)\n";
-    std::cout << "  --patience <int>             Paciência para parada antecipada (padrão: 100)\n";
+    std::cout << "  --selection {torneio|roulette}  Método de seleção (padrão: torneio)\n";
+    std::cout << "  --torneio <int>           Tamanho do torneio (padrão: 3)\n";
+    std::cout << "  --alpha <int>                Contagem de alpha (padrão: 2)\n";
+    std::cout << "  --paciencia <int>             Paciência para parada antecipada (padrão: 100)\n";
     std::cout << "  --seed <int>                 Semente aleatória (padrão: 42)\n";
-    std::cout << "  --outdir <path>              Diretório de saída (padrão: ./outputs)\n";
-    std::cout << "  --frames <path>              Diretório de quadros (padrão: ./frames)\n";
     std::cout << "  --check                      Executar modo de validação rápida\n";
     std::cout << "  --help                       Mostrar esta mensagem de ajuda\n\n";
     std::cout << "Exemplos:\n";
-    std::cout << "  " << program << " --scenario uniform --n 60 --epochs 800 --crossover pmx --mut 0.08\n";
-    std::cout << "  " << program << " --scenario circle --n 80 --epochs 1200 --selection roulette --elite 4\n";
+    std::cout << "  " << program << " --cenario uniforme --pontos 60 --epocas 800 --mut 0.08\n";
+    std::cout << "  " << program << " --cenario circulo --pontos 80 --epocas 1200 --alpha 4\n";
     std::cout << "  " << program << " --check\n\n";
 }
 
 bool parseArgs(int argc, char* argv[], Config& config) {
+    // Se não houver argumentos, perguntar se deseja usar config padrão
+    if (argc == 1) {
+        std::cout << "Deseja usar configuração padrão? (1=Sim, 0=Não): ";
+        int p = 0;
+        std::cin >> p;
+        if (p > 0) {
+            return true;  // Continua com config padrão
+        } else {
+            printUsage(argv[0]);
+            return false;  // Sai do programa
+        }
+    }
+    
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         
@@ -77,26 +88,26 @@ bool parseArgs(int argc, char* argv[], Config& config) {
             return false;
         } else if (arg == "--check") {
             config.check_mode = true;
-        } else if (arg == "--scenario" && i + 1 < argc) {
-            config.scenario = argv[++i];
-        } else if (arg == "--n" && i + 1 < argc) {
-            config.n = std::atoi(argv[++i]);
-        } else if (arg == "--epochs" && i + 1 < argc) {
-            config.epochs = std::atoi(argv[++i]);
+        } else if (arg == "--cenario" && i + 1 < argc) {
+            config.cenario = argv[++i];
+        } else if (arg == "--pontos" && i + 1 < argc) {
+            config.pontos = std::atoi(argv[++i]);
+        } else if (arg == "--epocas" && i + 1 < argc) {
+            config.epocas = std::atoi(argv[++i]);
         } else if (arg == "--pop" && i + 1 < argc) {
             config.pop = std::atoi(argv[++i]);
         } else if (arg == "--mut" && i + 1 < argc) {
             config.mut = std::atof(argv[++i]);
         } else if (arg == "--selection" && i + 1 < argc) {
             config.selection = argv[++i];
-        } else if (arg == "--tournament" && i + 1 < argc) {
-            config.tournament = std::atoi(argv[++i]);
+        } else if (arg == "--torneio" && i + 1 < argc) {
+            config.torneio = std::atoi(argv[++i]);
         } else if (arg == "--crossover" && i + 1 < argc) {
             config.crossover = argv[++i];
-        } else if (arg == "--elite" && i + 1 < argc) {
-            config.elite = std::atoi(argv[++i]);
-        } else if (arg == "--patience" && i + 1 < argc) {
-            config.patience = std::atoi(argv[++i]);
+        } else if (arg == "--alpha" && i + 1 < argc) {
+            config.alpha = std::atoi(argv[++i]);
+        } else if (arg == "--paciencia" && i + 1 < argc) {
+            config.paciencia = std::atoi(argv[++i]);
         } else if (arg == "--seed" && i + 1 < argc) {
             config.seed = std::atoi(argv[++i]);
         } else if (arg == "--outdir" && i + 1 < argc) {
@@ -113,17 +124,17 @@ bool parseArgs(int argc, char* argv[], Config& config) {
     return true;
 }
 
-bool validateConfig(const Config& config) {
-    if (config.n < 8) {
-        std::cerr << "Erro: Mínimo de 8 cidades necessário\n";
+bool validarConfig(const Config& config) {
+    if (config.pontos < 8) {
+        std::cerr << "Erro: Mínimo de 8 pontos necessário\n";
         return false;
     }
-    if (config.scenario != "uniform" && config.scenario != "circle") {
-        std::cerr << "Erro: Cenário deve ser 'uniform' ou 'circle'\n";
+    if (config.cenario != "uniforme" && config.cenario != "circulo") {
+        std::cerr << "Erro: Cenário deve ser 'uniforme' ou 'circulo'\n";
         return false;
     }
-    if (config.selection != "tournament" && config.selection != "roulette") {
-        std::cerr << "Erro: Seleção deve ser 'tournament' ou 'roulette'\n";
+    if (config.selection != "torneio" && config.selection != "roulette") {
+        std::cerr << "Erro: Seleção deve ser 'torneio' ou 'roulette'\n";
         return false;
     }
     if (config.crossover != "ox" && config.crossover != "pmx") {
@@ -148,7 +159,7 @@ public:
     GAWithFrames(const TSPInstance& tsp, const GAConfig& cfg, const Config& user_config)
         : GeneticAlgorithm(tsp, cfg), tsp_ref(tsp), config_ref(user_config) {
         // Salva quadros a cada N gerações (ajusta com base no total de gerações)
-        frame_interval = std::max(1, cfg.num_epochs / 200); // máx ~200 quadros
+        frame_interval = std::max(1, cfg.num_epochs / MAXQ); // máx ~200 quadros
     }
     
     void runWithFrames() {
@@ -157,41 +168,41 @@ public:
         // Salva quadro inicial
         saveEpochFrame(tsp_ref, best_ever, 0, config, config_ref.framesdir, 1);
         
-        for (int epoch = 0; epoch < config.num_epochs; ++epoch) {
+        for (int epocas = 0; epocas < config.num_epochs; ++epocas) {
             evolve();
             
             // Rastreia estatísticas
             std::sort(population.begin(), population.end());
-            double best = population[0].fitness;
-            double worst = population.back().fitness;
+            double melhor = population[0].fitness;
+            double pior = population.back().fitness;
             double sum = 0.0;
             for (const auto& ind : population) {
                 sum += ind.fitness;
             }
-            double mean = sum / population.size();
+            double media = sum / population.size();
             
-            best_per_epoch.push_back(best);
-            mean_per_epoch.push_back(mean);
-            worst_per_epoch.push_back(worst);
+            melhor_por_epoca.push_back(melhor);
+            media_por_epoca.push_back(media);
+            pior_por_epoca.push_back(pior);
             
             // Salva quadro em intervalos regulares
-            if ((epoch + 1) % frame_interval == 0 || epoch == config.num_epochs - 1) {
-                saveEpochFrame(tsp_ref, best_ever, epoch + 1, config, config_ref.framesdir, 1);
+            if ((epocas + 1) % frame_interval == 0 || epocas == config.num_epochs - 1) {
+                saveEpochFrame(tsp_ref, best_ever, epocas + 1, config, config_ref.framesdir, 1);
             }
             
             // Indicador de progresso
-            if ((epoch + 1) % 50 == 0) {
-                std::cout << "Época " << (epoch + 1) << " | Melhor: " << best << "\n";
+            if ((epocas + 1) % 50 == 0) {
+                std::cout << "Época " << (epocas + 1) << " | Melhor: " << melhor << "\n";
             }
             
             // Verifica paciência (parada antecipada)
-            if (generations_without_improvement >= config.patience) {
+            if (generations_without_improvement >= config.paciencia) {
                 // Corta vetores para as épocas realmente executadas
-                best_per_epoch.resize(epoch + 1);
-                mean_per_epoch.resize(epoch + 1);
-                worst_per_epoch.resize(epoch + 1);
-                std::cout << "Parada antecipada na época " << (epoch + 1) << " (paciência atingida)\n";
-                saveEpochFrame(tsp_ref, best_ever, epoch + 1, config, config_ref.framesdir, 1);
+                melhor_por_epoca.resize(epocas + 1);
+                media_por_epoca.resize(epocas + 1);
+                pior_por_epoca.resize(epocas + 1);
+                std::cout << "Parada antecipada na época " << (epocas + 1) << " (paciência atingida)\n";
+                saveEpochFrame(tsp_ref, best_ever, epocas + 1, config, config_ref.framesdir, 1);
                 break;
             }
         }
@@ -199,61 +210,58 @@ public:
 };
 
 int main(int argc, char* argv[]) {
+    // Cria Struct com configuracoes padrões
     Config config;
     
+    //caso nao seja passado argumentos na execucao do programa e o usuario opte por nao usar as configuracoes padroes, finaliza o programa
     if (!parseArgs(argc, argv, config)) {
         return 1;
     }
-    
-    // Modo de verificação: execução rápida de validação
+    // --check: executa com algumas modificacoes simples na config, util para debuggar ou testar o programa
     if (config.check_mode) {
         std::cout << "Executando no modo CHECK (validação rápida)\n";
-        config.epochs = 30;
-        config.n = 20;
+        config.epocas = 30;
+        config.pontos = 20;
         config.pop = 50;
     }
     
-    if (!validateConfig(config)) {
+    //valida se parametros passados para config sao validos, se nao, finaliza o programa
+    if (!validarConfig(config)) {
         return 1;
     }
     
+    //printa configuracoes finais que serao utilizadas no algoritmo
     config.print();
     
-    // Cria diretórios de saída
+    // Cria diretórios de saida
     ensureDirectories(config.outdir, config.framesdir);
     
     // Configura instância TSP
     TSPInstance tsp;
-    if (config.scenario == "uniform") {
-        std::cout << "Gerando " << config.n << " cidades aleatórias (distribuição uniforme)...\n";
-        tsp.generateUniform(config.n, config.seed);
+    if (config.cenario == "uniforme") {
+        std::cout << "Gerando " << config.pontos << " cidades aleatórias (distribuição uniforme)...\n";
+        tsp.generateUniform(config.pontos, config.seed);
     } else {
-        std::cout << "Gerando " << config.n << " cidades em um círculo...\n";
-        tsp.generateCircle(config.n);
+        std::cout << "Gerando " << config.pontos << " cidades em um círculo...\n";
+        tsp.generateCircle(config.pontos);
     }
     
-    // Configura configuração GA
+    // Define configuração GA
     GAConfig ga_config;
     ga_config.population_size = config.pop;
-    ga_config.num_epochs = config.epochs;
+    ga_config.num_epochs = config.epocas;
     ga_config.mutation_rate = config.mut;
-    ga_config.tournament_size = config.tournament;
-    ga_config.elite_count = config.elite;
-    ga_config.patience = config.patience;
+    ga_config.torneio_size = config.torneio;
+    ga_config.alpha_count = config.alpha;
+    ga_config.paciencia = config.paciencia;
     ga_config.seed = config.seed;
+    ga_config.crossover = GAConfig::OX;
     
     // Método de seleção
-    if (config.selection == "tournament") {
-        ga_config.selection = GAConfig::TOURNAMENT;
+    if (config.selection == "torneio") {
+        ga_config.selection = GAConfig::TORNEIO;
     } else {
         ga_config.selection = GAConfig::ROULETTE;
-    }
-    
-    // Método de crossover
-    if (config.crossover == "ox") {
-        ga_config.crossover = GAConfig::OX;
-    } else {
-        ga_config.crossover = GAConfig::PMX;
     }
     
     // Executa GA com geração de frames em uma única execução
@@ -274,23 +282,23 @@ int main(int argc, char* argv[]) {
     std::cout << "\nSalvando saídas...\n";
     
     // Melhor rota SVG
-    std::string best_tour_svg = config.outdir + "/best_tour.svg";
+    std::string best_tour_svg = config.outdir + "/melhor_volta.svg";
     plotTour(tsp, ga.getBestEver().tour, best_tour_svg, 
              "Melhor Rota - Comprimento: " + std::to_string(ga.getBestEver().fitness));
     std::cout << "  Salvo: " << best_tour_svg << "\n";
     
     // Melhor rota texto
-    std::string best_tour_txt = config.outdir + "/best_tour.txt";
+    std::string best_tour_txt = config.outdir + "/melhor_volta.txt";
     saveTourToFile(best_tour_txt, ga.getBestEver().tour, ga.getBestEver().fitness);
     std::cout << "  Salvo: " << best_tour_txt << "\n";
     
     // Gráfico de convergência
-    std::string convergence_svg = config.outdir + "/convergence.svg";
+    std::string convergence_svg = config.outdir + "/convergencia.svg";
     plotConvergence(ga.getBestPerEpoch(), convergence_svg);
     std::cout << "  Salvo: " << convergence_svg << "\n";
     
     // Métricas CSV
-    std::string metrics_csv = config.outdir + "/metrics.csv";
+    std::string metrics_csv = config.outdir + "/metricas.csv";
     saveMetricsCSV(metrics_csv, ga.getBestPerEpoch(), ga.getMeanPerEpoch(), 
                    ga.getWorstPerEpoch(), config.mut, config.seed);
     std::cout << "  Salvo: " << metrics_csv << "\n";
@@ -299,7 +307,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Quadros salvos em: " << config.framesdir << "/\n";
     
     if (config.check_mode) {
-        std::cout << "\n✓ Modo CHECK concluído com sucesso!\n";
+        std::cout << "\n  Modo CHECK concluído com sucesso!\n";
         std::cout << "  - Quadros foram gerados em " << config.framesdir << "/\n";
         std::cout << "  - Métricas salvas em " << metrics_csv << "\n";
         std::cout << "  - Melhor rota salva em " << best_tour_svg << "\n";

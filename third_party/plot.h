@@ -117,7 +117,7 @@ public:
         if (!file.is_open()) return false;
         
         // Add padding to bounds
-        if (auto_bounds && !lines.empty() || !scatters.empty()) {
+        if ((auto_bounds && !lines.empty()) || !scatters.empty()) {
             double padX = (maxX - minX) * 0.05;
             double padY = (maxY - minY) * 0.05;
             minX -= padX; maxX += padX;

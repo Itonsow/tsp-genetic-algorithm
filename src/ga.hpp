@@ -26,12 +26,12 @@ struct GAConfig {
     int population_size = 200;
     int num_epochs = 500;
     double mutation_rate = 0.05;
-    int tournament_size = 3;
-    int elite_count = 2;
-    int patience = 100;
+    int torneio_size = 3;
+    int alpha_count = 2;
+    int paciencia = 100;
     
-    enum SelectionType { TOURNAMENT, ROULETTE };
-    SelectionType selection = TOURNAMENT;
+    enum SelectionType { TORNEIO, ROULETTE };
+    SelectionType selection = TORNEIO;
     
     enum CrossoverType { OX, PMX };
     CrossoverType crossover = OX;
@@ -47,9 +47,9 @@ protected:
     std::mt19937 rng;
     
     std::vector<Individual> population;
-    std::vector<double> best_per_epoch;
-    std::vector<double> mean_per_epoch;
-    std::vector<double> worst_per_epoch;
+    std::vector<double> melhor_por_epoca;
+    std::vector<double> media_por_epoca;
+    std::vector<double> pior_por_epoca;
     
     Individual best_ever;
     int generations_without_improvement;
@@ -81,14 +81,14 @@ public:
     Individual tournamentSelection() {
         std::uniform_int_distribution<int> dist(0, population.size() - 1);
         
-        Individual best = population[dist(rng)];
-        for (int i = 1; i < config.tournament_size; ++i) {
+        Individual melhor = population[dist(rng)];
+        for (int i = 1; i < config.torneio_size; ++i) {
             Individual candidate = population[dist(rng)];
-            if (candidate.fitness < best.fitness) {
-                best = candidate;
+            if (candidate.fitness < melhor.fitness) {
+                melhor = candidate;
             }
         }
-        return best;
+        return melhor;
     }
     
     // Seleção por roleta (proporcional à fitness)
@@ -121,7 +121,7 @@ public:
     
     // Seleciona pai com base no método de seleção configurado
     Individual selectParent() {
-        if (config.selection == GAConfig::TOURNAMENT) {
+        if (config.selection == GAConfig::TORNEIO) {
             return tournamentSelection();
         } else {
             return rouletteSelection();
@@ -225,7 +225,7 @@ public:
         
         // Elitismo: mantém os melhores indivíduos
         std::sort(population.begin(), population.end());
-        for (int i = 0; i < config.elite_count && i < static_cast<int>(population.size()); ++i) {
+        for (int i = 0; i < config.alpha_count && i < static_cast<int>(population.size()); ++i) {
             new_population.push_back(population[i]);
         }
         
@@ -257,29 +257,29 @@ public:
     void run() {
         initializePopulation();
         
-        for (int epoch = 0; epoch < config.num_epochs; ++epoch) {
+        for (int epocas = 0; epocas < config.num_epochs; ++epocas) {
             evolve();
             
             // Rastreia estatísticas
             std::sort(population.begin(), population.end());
-            double best = population[0].fitness;
-            double worst = population.back().fitness;
+            double melhor = population[0].fitness;
+            double pior = population.back().fitness;
             double sum = 0.0;
             for (const auto& ind : population) {
                 sum += ind.fitness;
             }
-            double mean = sum / population.size();
+            double media = sum / population.size();
             
-            best_per_epoch.push_back(best);
-            mean_per_epoch.push_back(mean);
-            worst_per_epoch.push_back(worst);
+            melhor_por_epoca.push_back(melhor);
+            media_por_epoca.push_back(media);
+            pior_por_epoca.push_back(pior);
             
             // Verifica paciência (parada antecipada)
-            if (generations_without_improvement >= config.patience) {
+            if (generations_without_improvement >= config.paciencia) {
                 // Corta vetores para as épocas realmente executadas
-                best_per_epoch.resize(epoch + 1);
-                mean_per_epoch.resize(epoch + 1);
-                worst_per_epoch.resize(epoch + 1);
+                melhor_por_epoca.resize(epocas + 1);
+                media_por_epoca.resize(epocas + 1);
+                pior_por_epoca.resize(epocas + 1);
                 break;
             }
         }
@@ -287,11 +287,11 @@ public:
     
     // Métodos de acesso
     const Individual& getBestEver() const { return best_ever; }
-    const std::vector<double>& getBestPerEpoch() const { return best_per_epoch; }
-    const std::vector<double>& getMeanPerEpoch() const { return mean_per_epoch; }
-    const std::vector<double>& getWorstPerEpoch() const { return worst_per_epoch; }
+    const std::vector<double>& getBestPerEpoch() const { return melhor_por_epoca; }
+    const std::vector<double>& getMeanPerEpoch() const { return media_por_epoca; }
+    const std::vector<double>& getWorstPerEpoch() const { return pior_por_epoca; }
     const std::vector<Individual>& getPopulation() const { return population; }
-    int getActualEpochs() const { return best_per_epoch.size(); }
+    int getActualEpochs() const { return melhor_por_epoca.size(); }
 };
 
 #endif // GA_HPP
