@@ -18,7 +18,6 @@ struct Point {
     Point() : x(0), y(0) {}
     Point(double x_, double y_) : x(x_), y(y_) {}
     
-    // Euclidean distance to another point
     double distance(const Point& other) const {
         double dx = x - other.x;
         double dy = y - other.y;

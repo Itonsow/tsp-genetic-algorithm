@@ -1,7 +1,9 @@
 #!/bin/bash
 # Versão SUPER otimizada: Processa frame por frame via pipe
 
-cd "/Users/gustavoito/Downloads/IA GENETICO/cgp"
+# Usa o diretório atual do script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 
 echo "╔═════════════════════════════════════════════════════════════╗"
 echo "║  SVG → GIF (Pipeline Ultra-Otimizado - Frame por Frame)   ║"
@@ -49,7 +51,7 @@ if [ "$FRAME_COUNT" -eq 0 ]; then
     exit 1
 fi
 
-echo "✅ $FRAME_COUNT frames encontrados"
+echo " $FRAME_COUNT frames encontrados"
 echo ""
 
 # Criar temp para cache mínimo
@@ -57,7 +59,7 @@ TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔄 Fase 1/3: Conversão SVG → PNG (cache temporário)"
+echo "  Fase 1/3: Conversão SVG → PNG (cache temporário)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 count=0
@@ -79,7 +81,7 @@ echo ""
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🎨 Fase 2/3: Análise e geração de paleta otimizada"
+echo "  Fase 2/3: Análise e geração de paleta otimizada"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ffmpeg -hide_banner -loglevel error -stats \
@@ -90,7 +92,7 @@ ffmpeg -hide_banner -loglevel error -stats \
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🎬 Fase 3/3: Renderizando GIF com paleta customizada"
+echo " Fase 3/3: Renderizando GIF com paleta customizada"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ffmpeg -hide_banner -loglevel error -stats \
@@ -108,19 +110,19 @@ if [ -f "$OUTPUT" ]; then
     DURATION=$(echo "scale=2; $FRAME_COUNT / $FPS" | bc)
     
     echo "╔═════════════════════════════════════════════════════════════╗"
-    echo "║                  ✅ SUCESSO TOTAL!                         ║"
+    echo "║                    SUCESSO TOTAL!                         ║"
     echo "╚═════════════════════════════════════════════════════════════╝"
     echo ""
-    echo "📊 GIF Gerado:"
-    echo "   📁 Arquivo:     $OUTPUT"
-    echo "   📏 Tamanho:     $FILE_SIZE"
-    echo "   🖼️  Resolução:   ${WIDTH}x${HEIGHT}px"
-    echo "   🎞️  Frames:      $FRAME_COUNT"
-    echo "   ⏱️  FPS:         $FPS"
-    echo "   ⏲️  Duração:     ${DURATION}s"
-    echo "   🔄 Loop:        Infinito"
+    echo "  GIF Gerado:"
+    echo "     Arquivo:     $OUTPUT"
+    echo "     Tamanho:     $FILE_SIZE"
+    echo "      Resolução:   ${WIDTH}x${HEIGHT}px"
+    echo "      Frames:      $FRAME_COUNT"
+    echo "      FPS:         $FPS"
+    echo "      Duração:     ${DURATION}s"
+    echo "      Loop:       Infinito"
     echo ""
-    echo "▶️  Abrir agora:"
+    echo "   Abrir agora:"
     echo "   open $OUTPUT"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -137,6 +139,6 @@ if [ -f "$OUTPUT" ]; then
     echo "   $0 --size 1280 960 --output outputs/evolution_hq.gif"
     echo ""
 else
-    echo "❌ Erro ao gerar GIF"
+    echo "  Erro ao gerar GIF"
     exit 1
 fi
