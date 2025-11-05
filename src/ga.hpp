@@ -41,7 +41,7 @@ struct GAConfig {
 
 // Algoritmo Genético para TSP
 class GeneticAlgorithm {
-private:
+protected:
     const TSPInstance& tsp;
     GAConfig config;
     std::mt19937 rng;
@@ -70,8 +70,10 @@ public:
             population.emplace_back(tour, fitness);
         }
         
-        // Encontra o melhor inicial
-        best_ever = *std::min_element(population.begin(), population.end());
+        // Encontra o melhor inicial (com validação)
+        if (!population.empty()) {
+            best_ever = *std::min_element(population.begin(), population.end());
+        }
     }
     
     // Seleção por torneio
@@ -98,8 +100,8 @@ public:
         double total = 0.0;
         
         for (size_t i = 0; i < population.size(); ++i) {
-            // Inverse fitness: max + 1 - fitness
-            inverse_fitness[i] = max_fitness + 1.0 - population[i].fitness;
+            // Inverse fitness: max - fitness + 1 (evita valores negativos)
+            inverse_fitness[i] = max_fitness - population[i].fitness + 1.0;
             total += inverse_fitness[i];
         }
         
@@ -149,14 +151,8 @@ public:
             int parent2_pos = (end + 1 + i) % n;
             int city = parent2[parent2_pos];
             
-            // Verifica se a cidade já está no filho
-            bool found = false;
-            for (int j = start; j <= end; ++j) {
-                if (child[j] == city) {
-                    found = true;
-                    break;
-                }
-            }
+            // Verifica se a cidade já está no filho (em TODO o vetor)
+            bool found = std::find(child.begin(), child.end(), city) != child.end();
             
             if (!found) {
                 child[child_pos] = city;

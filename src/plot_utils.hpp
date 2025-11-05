@@ -63,7 +63,8 @@ inline bool plotTour(const TSPInstance& tsp, const Tour& tour, const std::string
 inline bool plotEpochTour(const TSPInstance& tsp, const Individual& best, int epoch,
                           const GAConfig& /* config */, const std::string& filename) {
     std::ostringstream title;
-    title << "Generation: " << epoch;
+    title << "Generation: " << epoch << " | Length: " 
+          << std::fixed << std::setprecision(2) << best.fitness;
     
     return plotTour(tsp, best.tour, filename, title.str());
 }

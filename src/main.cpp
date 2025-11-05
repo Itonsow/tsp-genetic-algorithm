@@ -154,35 +154,47 @@ public:
     void runWithFrames() {
         initializePopulation();
         
-        GAConfig ga_cfg;
-        ga_cfg.population_size = config_ref.pop;
-        ga_cfg.mutation_rate = config_ref.mut;
+        // Salva quadro inicial
+        saveEpochFrame(tsp_ref, best_ever, 0, config, config_ref.framesdir, 1);
         
-        for (int epoch = 0; epoch < static_cast<int>(getBestPerEpoch().capacity()); ++epoch) {
-            // Salva quadro antes da evolução
-            if (epoch % frame_interval == 0) {
-                saveEpochFrame(tsp_ref, getBestEver(), epoch, ga_cfg, config_ref.framesdir, 1);
-            }
-            
+        for (int epoch = 0; epoch < config.num_epochs; ++epoch) {
             evolve();
             
-            // Indicador de progresso
-            if (epoch % 50 == 0 || epoch == 0) {
-                std::cout << "Época " << epoch << " | Melhor: " << getBestEver().fitness << "\n";
+            // Rastreia estatísticas
+            std::sort(population.begin(), population.end());
+            double best = population[0].fitness;
+            double worst = population.back().fitness;
+            double sum = 0.0;
+            for (const auto& ind : population) {
+                sum += ind.fitness;
+            }
+            double mean = sum / population.size();
+            
+            best_per_epoch.push_back(best);
+            mean_per_epoch.push_back(mean);
+            worst_per_epoch.push_back(worst);
+            
+            // Salva quadro em intervalos regulares
+            if ((epoch + 1) % frame_interval == 0 || epoch == config.num_epochs - 1) {
+                saveEpochFrame(tsp_ref, best_ever, epoch + 1, config, config_ref.framesdir, 1);
             }
             
-            // Verifica paciência
-            if (getActualEpochs() > 0 && epoch >= getActualEpochs() - 1) {
-                std::cout << "Parada antecipada na época " << epoch << " (paciência atingida)\n";
-                // Salva quadro final
-                saveEpochFrame(tsp_ref, getBestEver(), epoch, ga_cfg, config_ref.framesdir, 1);
+            // Indicador de progresso
+            if ((epoch + 1) % 50 == 0) {
+                std::cout << "Época " << (epoch + 1) << " | Melhor: " << best << "\n";
+            }
+            
+            // Verifica paciência (parada antecipada)
+            if (generations_without_improvement >= config.patience) {
+                // Corta vetores para as épocas realmente executadas
+                best_per_epoch.resize(epoch + 1);
+                mean_per_epoch.resize(epoch + 1);
+                worst_per_epoch.resize(epoch + 1);
+                std::cout << "Parada antecipada na época " << (epoch + 1) << " (paciência atingida)\n";
+                saveEpochFrame(tsp_ref, best_ever, epoch + 1, config, config_ref.framesdir, 1);
                 break;
             }
         }
-        
-        // Sempre salva o quadro final
-        int final_epoch = getActualEpochs() - 1;
-        saveEpochFrame(tsp_ref, getBestEver(), final_epoch, ga_cfg, config_ref.framesdir, 1);
     }
 };
 
@@ -244,30 +256,12 @@ int main(int argc, char* argv[]) {
         ga_config.crossover = GAConfig::PMX;
     }
     
-    // Executa GA
+    // Executa GA com geração de frames em uma única execução
     std::cout << "Iniciando Algoritmo Genético...\n";
     auto start_time = std::chrono::high_resolution_clock::now();
     
-    GeneticAlgorithm ga(tsp, ga_config);
-    ga.run();
-    
-    // Gera quadros durante a evolução (re-executa com salvamento de quadros)
-    std::cout << "\nGerando quadros das épocas...\n";
-    GeneticAlgorithm ga_frames(tsp, ga_config);
-    ga_frames.initializePopulation();
-    
-    int frame_interval = std::max(1, config.epochs / 200);
-    for (int epoch = 0; epoch < config.epochs; ++epoch) {
-        ga_frames.evolve();
-        
-        if (epoch % frame_interval == 0 || epoch == config.epochs - 1) {
-            saveEpochFrame(tsp, ga_frames.getBestEver(), epoch, ga_config, config.framesdir, 1);
-        }
-        
-        if (ga_frames.getActualEpochs() > 0 && epoch >= ga_frames.getActualEpochs() - 1) {
-            break;
-        }
-    }
+    GAWithFrames ga(tsp, ga_config, config);
+    ga.runWithFrames();
     
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
