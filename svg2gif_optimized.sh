@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 echo "╔═════════════════════════════════════════════════════════════╗"
-echo "║  SVG → GIF (Pipeline Ultra-Otimizado - Frame por Frame)   ║"
+echo "║  SVG → GIF (Pipeline Ultra-Otimizado - Frame por Frame)     ║"
 echo "╚═════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -38,16 +38,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "⚙️  Configuração:"
-echo "   • Resolução: ${WIDTH}x${HEIGHT}"
-echo "   • FPS: $FPS"
-echo "   • Saída: $OUTPUT"
+echo "Configuracao:"
+echo "   - Resolucao: ${WIDTH}x${HEIGHT}"
+echo "   - FPS: $FPS"
+echo "   - Saida: $OUTPUT"
 echo ""
 
 # Contar frames
-FRAME_COUNT=$(ls frames/epoch_*.svg 2>/dev/null | wc -l | tr -d ' ')
+FRAME_COUNT=$(ls frames/epocas_*.svg 2>/dev/null | wc -l | tr -d ' ')
 if [ "$FRAME_COUNT" -eq 0 ]; then
-    echo "❌ Nenhum frame SVG encontrado"
+    echo "Nenhum frame SVG encontrado"
     exit 1
 fi
 
@@ -63,7 +63,7 @@ echo "  Fase 1/3: Conversão SVG → PNG (cache temporário)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 count=0
-for f in frames/epoch_*.svg; do
+for f in frames/epocas_*.svg; do
     basename=$(basename "$f" .svg)
     rsvg-convert "$f" -o "$TEMP_DIR/${basename}.png" -w $WIDTH -h $HEIGHT >/dev/null 2>&1
     count=$((count + 1))
@@ -85,7 +85,7 @@ echo "  Fase 2/3: Análise e geração de paleta otimizada"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ffmpeg -hide_banner -loglevel error -stats \
-  -framerate $FPS -pattern_type glob -i "$TEMP_DIR/epoch_*.png" \
+  -framerate $FPS -pattern_type glob -i "$TEMP_DIR/epocas_*.png" \
   -vf "fps=$FPS,scale=${WIDTH}:-1:flags=lanczos,palettegen=stats_mode=diff:max_colors=256" \
   -y "$TEMP_DIR/palette.png"
 
@@ -96,7 +96,7 @@ echo " Fase 3/3: Renderizando GIF com paleta customizada"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ffmpeg -hide_banner -loglevel error -stats \
-  -framerate $FPS -pattern_type glob -i "$TEMP_DIR/epoch_*.png" \
+  -framerate $FPS -pattern_type glob -i "$TEMP_DIR/epocas_*.png" \
   -i "$TEMP_DIR/palette.png" \
   -lavfi "fps=$FPS,scale=${WIDTH}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" \
   -loop 0 -y "$OUTPUT"
@@ -110,23 +110,23 @@ if [ -f "$OUTPUT" ]; then
     DURATION=$(echo "scale=2; $FRAME_COUNT / $FPS" | bc)
     
     echo "╔═════════════════════════════════════════════════════════════╗"
-    echo "║                    SUCESSO TOTAL!                         ║"
+    echo "║                     SUCESSO TOTAL!                          ║"
     echo "╚═════════════════════════════════════════════════════════════╝"
     echo ""
     echo "  GIF Gerado:"
     echo "     Arquivo:     $OUTPUT"
     echo "     Tamanho:     $FILE_SIZE"
-    echo "      Resolução:   ${WIDTH}x${HEIGHT}px"
-    echo "      Frames:      $FRAME_COUNT"
-    echo "      FPS:         $FPS"
-    echo "      Duração:     ${DURATION}s"
-    echo "      Loop:       Infinito"
+    echo "     Resolucao:   ${WIDTH}x${HEIGHT}px"
+    echo "     Frames:      $FRAME_COUNT"
+    echo "     FPS:         $FPS"
+    echo "     Duracao:     ${DURATION}s"
+    echo "     Loop:        Infinito"
     echo ""
     echo "   Abrir agora:"
     echo "   open $OUTPUT"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🎨 Criar variações:"
+    echo "  Criar variacoes:"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "   Pequeno (600px):"
