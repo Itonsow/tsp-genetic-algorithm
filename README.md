@@ -1,7 +1,10 @@
 ```markdown
 # TSP Genetic Algorithm
 
-Repositório com uma implementação educacional de um Algoritmo Genético para o Problema do Caixeiro Viajante (TSP - Travelling Salesman Problem). O foco é fornecer uma base clara e configurável para experimentar representações, operadores genéticos e estratégias de seleção, além de facilitar a visualização dos resultados.
+Repositório com uma implementação educacional de um Algoritmo Genético para o Problema do Caixeiro
+Viajante (TSP - Travelling Salesman Problem). O foco é fornecer uma base clara e configurável para
+experimentar representações, operadores genéticos e estratégias de seleção, além de facilitar a
+visualização dos resultados.
 
 ## Visão geral
 
