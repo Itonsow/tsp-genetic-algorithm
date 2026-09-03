@@ -35,11 +35,11 @@ check: $(TARGET)
 
 # Executar com cenário uniforme
 test-uniform: $(TARGET)
-	./$(TARGET) --scenario uniform --n 50 --epochs 500
+	./$(TARGET) --cenario uniforme --pontos 50 --epocas 500
 
 # Executar com cenário círculo
 test-circle: $(TARGET)
-	./$(TARGET) --scenario circle --n 50 --epochs 500
+	./$(TARGET) --cenario circulo --pontos 50 --epocas 500
 
 # Limpar outputs e rodar novamente
 fresh-run: clean-output test-uniform

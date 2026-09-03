@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
     ga_config.quant_alpha = config.alpha;
     ga_config.paciencia = config.paciencia;
     ga_config.seed = config.seed;
-    ga_config.crossover = GAConfig::OX;
+    ga_config.crossover = config.crossover == "pmx" ? GAConfig::PMX : GAConfig::OX;
 
     // Método de seleção
     if (config.selection == "torneio")
